@@ -5,5 +5,9 @@ FROM nginx:alpine
 COPY index.html /usr/share/nginx/html/index.html
 COPY sunderland-old.png /usr/share/nginx/html/sunderland-old.png
 
+# Copy entrypoint script and make it executable
+COPY entrypoint.sh /docker-entrypoint.d/99-replace-hostname.sh
+RUN chmod +x /docker-entrypoint.d/99-replace-hostname.sh
+
 # Expose port 80
 EXPOSE 80

@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: web-pod
-          image: pydvlpr/k8s-sunderland-current
+          image: pydvlpr/shield:latest
           ports:
             - containerPort: 80
 ---
@@ -60,6 +60,6 @@ spec:
     spec:
       containers:
         - name: web-pod
-          image: pydvlpr/k8s-sunderland-previous
+          image: pydvlpr/hydra:latest
           ports:
             - containerPort: 80

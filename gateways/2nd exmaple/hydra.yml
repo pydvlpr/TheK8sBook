@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hydra
+  namespace: ns-hydra
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hydra-app
+  template:
+    metadata:
+      labels:
+        app: hydra-app
+    spec:
+      containers:
+        - name: hydra-pod
+          image: pydvlpr/hydra:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-hydra
+  namespace: ns-hydra
+spec:
+  type: ClusterIP
+  selector:
+    app: hydra-app
+  ports:
+    - name: httpd
+      port: 8080
+      targetPort: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-hydra
+  namespace: ns-hydra
+spec:
+  parentRefs:
+    - name: gtw-prod-6
+      namespace: ns-infra
+      sectionName: http
+  hostnames:
+    - "myapp.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /hydra
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: svc-hydra
+          port: 8080

@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-current
+spec:
+  type: ClusterIP
+  selector:
+    app: current
+  ports:
+    - name: httpd
+      port: 8080
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-previous
+spec:
+  type: ClusterIP
+  selector:
+    app: previous
+  ports:
+    - name: httpd
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: current
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: current
+  template:
+    metadata:
+      labels:
+        app: current
+    spec:
+      containers:
+        - name: web-pod
+          image: pydvlpr/k8s-sunderland-current:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: previous
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: previous
+  template:
+    metadata:
+      labels:
+        app: previous
+    spec:
+      containers:
+        - name: web-pod
+          image: pydvlpr/k8s-sunderland-previous:latest
+          ports:
+            - containerPort: 80

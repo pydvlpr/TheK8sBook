@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-shield
+  namespace: ns-shield
+spec:
+  type: ClusterIP
+  selector:
+    app: shield-app
+  ports:
+    - name: httpd
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shield
+  namespace: ns-shield
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shield-app
+  template:
+    metadata:
+      labels:
+        app: shield-app
+    spec:
+      containers:
+        - name: shield-pod
+          image: pydvlpr/shield:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-shield
+  namespace: ns-shield
+spec:
+  parentRefs:
+    - name: gtw-prod-6
+      namespace: ns-infra
+      sectionName: http
+  hostnames:
+    - "myapp.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /shield
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: svc-shield
+          port: 8080
+---
